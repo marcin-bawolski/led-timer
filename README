@@ -1,6 +1,6 @@
 Simple seconds counter with three 7-segments digits.
 
-Basic $2 board with STM8S103F4, reset micro USB conenctor and SWID interface used. 
+Basic $2 board with STM8S103F3P6, reset micro USB conenctor and SWID interface used. 
 Hardware connections:
 
 LED:
@@ -9,6 +9,7 @@ Anodes (digits):
 	1 GPIOC.4  / tenths /
 	2 GPIOC.5  / hundredths /
 LED Anodes are connected to +5V via PNP transistor driven from pins as above
+PNP turns on by pulling bast to GND via GPIOC.3, GPIOC4  and GPIOC.5
 
 Segments:
 	a: GPIOB.4
