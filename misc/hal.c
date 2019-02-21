@@ -68,8 +68,6 @@ void SetupTimer1(uint16_t period ){
   TIM1->ARRH =  (uint8_t)(period>>8);
   TIM1->ARRL =  (uint8_t)(period & 0x00FF);
 
-  //TIM1->PSCRH = 0x03;
-  //TIM1->PSCRL = 0xe8; // prescaler = 1000
 
   TIM1->PSCRH = 0x00;
   TIM1->PSCRL = 0x01;
@@ -86,37 +84,18 @@ void attach_to_timer1(uint16_t *pCounter, uint16_t decrement)
 	  enableInterrupts();
 }
 
-/**
- *
- * @return
- */
-//uint8_t keyOn(void){
-//
-//  volatile uint8_t key;
-//  volatile uint8_t debounceCnt1, debounceCnt2 ;
-//
-//  key = !(ENC_SWITCH_PORT->IDR & ENC_SWITCH);
-//
-//  disableInterrupts();
-//  debounceCnt1 = (debounce);
-//  enableInterrupts();
-//
-//  debounceCnt2 = debounceCnt1 +10;
-//
-//  if (debounceCnt2 > debounceCnt1)
-//  {
-//    while(debounce < debounceCnt1)
-//      ;
-//  }else{
-//    while(debounce > debounceCnt2)
-//      ;
-//  }
-//
-//  if ( key == !(ENC_SWITCH_PORT->IDR & ENC_SWITCH))
-//    return key;
-//  else
-//    return 0;
-//}
+
+
+void setup_timer4(uint8_t period )
+{
+  // Assuming FMaster = 2 MHz and prescaler = 64, have 1us clock in timer
+  // Timer Auto-reload preload enable, UpCounting, Timer Enabled
+  TIM4->CR1 = (1u<<7) | (1u<<0);
+  TIM4->ARR =  period;
+  TIM4->PSCR = 0x06;
+
+  TIM4->IER = 1u<<0;     /*!< interrupt enable register*/
+}
 
 
 

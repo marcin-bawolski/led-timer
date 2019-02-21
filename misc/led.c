@@ -6,9 +6,10 @@
  */
 
 #include "led.h"
+#include "hal.h"
 #include "../stm8s.h"
 
-#define LCD_TICK (5ul*(2000000ul/64ul)/(1000ul) )
+#define LED_TICK (5ul*(2000000ul/64ul)/(1000ul) )
 
 #define LED_SEG_PIN_A   (1u<<4)
 #define LED_SEG_PIN_B   (1u<<5)
@@ -23,18 +24,16 @@
 #define LED_SEG_CDE_PORT   GPIOD
 #define LED_SEG_FG_PORT    GPIOC
 
-#define LED_SEG_H_PORT
 
-#define LED_PORT_ANODES GPIOC
-#define LED_PORT_AN2 GPIOC
-#define LED_PORT_AN3 GPIOC
+#define LED_PORT_ANODES     GPIOC
+#define LED_PORT_AN2        GPIOC
+#define LED_PORT_AN3        GPIOC
 
 #define LED_PIN_AN1  (1u<<0)
 #define LED_PIN_AN2  (1u<<1)
 #define LED_PIN_AN3  (1u<<2)
 
 #define LED_PIN_ANNODES_SHIFT 3
-
 #define LED_PIN_ANNODES_MASK  ((LED_PIN_AN1|LED_PIN_AN2|LED_PIN_AN3)<<LED_PIN_ANNODES_SHIFT)
 
 
@@ -58,7 +57,6 @@
 
 #define SEG_F_HW  (1u<<6)
 #define SEG_G_HW  (1u<<7)
-
 
 #define SEG_AB  (SEG_A|SEG_B)
 #define SEG_CDE (SEG_C|SEG_D|SEG_E)
@@ -103,9 +101,9 @@ void TIMER4_isr(void) __interrupt(IRQ_TIM4)
 	static uint8_t multiplex_pos=0;
 
 	uint8_t digit = led_cnt[multiplex_pos];
-	led_set_digit(10);
+	led_set_digit_to_blank();
 	led_select_active_pos(multiplex_pos);
-	led_set_digit(digit);
+	led_set_digit(digit); /* Display new digit value */
 
 	multiplex_pos++;
 
@@ -115,6 +113,16 @@ void TIMER4_isr(void) __interrupt(IRQ_TIM4)
 	}
 
 	TIM4->SR1 &= ~(1ul<<0);
+}
+
+
+void led_set_digit_to_blank(void)
+{
+
+    /* by setting segment pin to HI it is turned off */
+    LED_SEG_AB_PORT->ODR  = ((LED_SEG_AB_PORT->ODR  | SEG_AB_HW));
+    LED_SEG_CDE_PORT->ODR = ((LED_SEG_CDE_PORT->ODR | SEG_CDE_HW));
+    LED_SEG_FG_PORT->ODR  = ((LED_SEG_FG_PORT->ODR  | SEG_FG_HW));
 }
 
 
@@ -134,9 +142,7 @@ void led_set_digit(uint8_t d)
 
 	LED_SEG_AB_PORT->ODR  = ((LED_SEG_AB_PORT->ODR  | SEG_AB_HW))  & ~AB;
 	LED_SEG_CDE_PORT->ODR = ((LED_SEG_CDE_PORT->ODR | SEG_CDE_HW)) & ~CDE;
-
-	// take care of ANODES (3,4,5 HW pos)
-	LED_SEG_FG_PORT->ODR  = ((LED_SEG_FG_PORT->ODR | SEG_FG_HW) & ~FG);
+	LED_SEG_FG_PORT->ODR  = ((LED_SEG_FG_PORT->ODR  | SEG_FG_HW) & ~FG);
 }
 
 void led_select_active_pos(uint8_t n)
@@ -148,26 +154,13 @@ void led_select_active_pos(uint8_t n)
 
 
 
-void led_setup_timer4(uint8_t period )
-{
-
-  // Assuming FMaster = 2 MHz and prescaler = 64, have 1us clock in timer
-  // Timer Auto-reload preload enable, UpCounting, Timer Enabled
-  TIM4->CR1 = (1u<<7) | (1u<<0);
-  TIM4->ARR =  period;
-  TIM4->PSCR = 0x06;
-
-  TIM4->IER = 1u<<0;     /*!< interrupt enable register*/
-}
-
-
 
 void led_init_lcd(void)
 {
 	led_init_anodes_pins();
 	led_init_segment_pins();
 
-	led_setup_timer4(LCD_TICK);
+	setup_timer4(LED_TICK);
 }
 
 

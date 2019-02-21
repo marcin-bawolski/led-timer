@@ -86,21 +86,21 @@ void main(void)
 }
 
 void set_number(uint8_t led[3], uint16_t value) {
-	uint16_t hundrets, tenths, singles, tmp_counter;
+	uint16_t hundredths, tenths, decimals, tmp_counter;
+
 	if (value > 999){
 		value = 999;
 	}
 
-	hundrets = value / 100;
+	hundredths = value / 100;
 
-	tmp_counter = value - (100 * hundrets);
+	tmp_counter = value - (100 * hundredths);
 	tenths = (tmp_counter) / 10;
-	singles = tmp_counter - (10 * tenths);
+	decimals = tmp_counter - (10 * tenths);
 
-	led[2] = hundrets;
+	led[2] = hundredths;
 	led[1] = tenths;
-	led[0] = singles;
-
+	led[0] = decimals;
 }
 
 

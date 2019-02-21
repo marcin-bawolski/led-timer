@@ -13,6 +13,7 @@
 
 void led_init_lcd(void);
 void led_set_digit(uint8_t d);
+void led_set_digit_to_blank(void);
 void led_select_active_pos(uint8_t n);
 
 void TIMER4_isr(void) __interrupt(IRQ_TIM4);

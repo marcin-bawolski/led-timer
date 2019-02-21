@@ -24,11 +24,12 @@
 inline void clear_timeout(void);
 uint8_t  InitClock(void);
 void SetupTimer1(uint16_t period );
-void led_setup_timer4(uint8_t period );
+
 uint8_t keyOn(void);
 inline void wait_for_timeout(void);
 inline void set_timeout(uint16_t time);
-void led_setup_timer4(uint8_t period );
+void setup_timer4(uint8_t period );
+
 void TIMER1_isr(void) __interrupt(IRQ_TIM1);
 void attach_to_timer1(uint16_t *pCounter, uint16_t decrement);
 
