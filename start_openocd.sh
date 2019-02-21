@@ -1,0 +1,1 @@
+openocd -f interface/stlink-v2.cfg -f target/stm8.cfg -c "init" -c "reset halt"
