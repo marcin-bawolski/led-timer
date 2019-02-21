@@ -1,0 +1,29 @@
+Simple seconds counter with three 7-segments digits.
+
+Basic $2 board with STM8S103F4, reset micro USB conenctor and SWID interface used. 
+Hardware connections:
+
+LED:
+Anodes (digits):
+	0 GPIOC.3  / singles digits /
+	1 GPIOC.4  / tenths /
+	2 GPIOC.5  / hundredths /
+LED Anodes are connected to +5V via PNP transistor driven from pins as above
+
+Segments:
+	a: GPIOB.4
+	b: GPIOB.5
+	c: GPIOD.2
+	d: GPIOD.3
+	e: GPIOD.4
+	f: GPIOC.6
+	g: GPIOC.7
+
+
+Encoder:
+	Pin A	GPIOA.1 (switches to GND, internal STM8S pull-ups used)
+	Pin B   GPIOA.2
+
+Encode Switch:
+	GPIOD.6  (switches to GND, internal STM8S pull-ups used)
+
