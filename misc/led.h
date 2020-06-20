@@ -10,11 +10,10 @@
 
 #include "../stm8s.h"
 #include "../include/stm8s_irq.h"
+extern const uint8_t LED_ALPHABET_CNT;
 
 void led_init_lcd(void);
-void led_set_digit(uint8_t d);
-void led_set_digit_to_blank(void);
-void led_select_active_pos(uint8_t n);
+//void led_select_active_pos(uint8_t n);
 
 void TIMER4_isr(void) __interrupt(IRQ_TIM4);
 

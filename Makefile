@@ -1,9 +1,12 @@
+##
+## $URL: https://repo1.mydevil.net/svn/priv/bawolski/stm8/trunk/tig_controller/Makefile $      
+## $Revision: 31 $ 
 
 CC=sdcc
 ROOT_PROJ=$(strip $(CURDIR))
 INCLUDE_DIRS=-I$(ROOT_PROJ) -I$(ROOT_PROJ)/misc/ -I$(ROOT_PROJ)/mode2T/
 
-TARGET:=timer-led
+TARGET:=led
 MAIN_C=main
 
 OUT_FOLDER:=build
@@ -13,7 +16,7 @@ C_SRCS=
 C_SRCS+=$(MAIN_C).c
 OBJS+=$(MAIN_C).rel
 
-CFLAGS= -DSTM8S103  --all-callee-saves --debug --stack-auto --fverbose-asm  --float-reent --no-peep
+CFLAGS= -DSTM8S103  --all-callee-saves --debug --verbose --stack-auto --fverbose-asm  --float-reent --no-peep
 
 -include ./misc/misc.mk
 
@@ -22,25 +25,18 @@ CFLAGS= -DSTM8S103  --all-callee-saves --debug --stack-auto --fverbose-asm  --fl
 all: $(TARGET).ihx Makefile
 
 $(TARGET).ihx:  $(OBJS)
+# $(C_SRCS) 
 	@echo ' --------------------------------------- '
 	@echo 'Final compile and link $@'
-	$(CC) -o $(TARGET).ihx $(CFLAGS)  -mstm8 $(INCLUDE_DIRS) --out-fmt-ihx $(OBJS)
-	$(CC) -o $(TARGET).elf $(CFLAGS)  -mstm8 $(INCLUDE_DIRS) --out-fmt-elf $(OBJS)
+	$(CC) -o $(TARGET).ihx $(CFLAGS) --verbose -V  -mstm8 $(INCLUDE_DIRS) --out-fmt-ihx $(OBJS)
+	$(CC) -o $(TARGET).elf $(CFLAGS) --verbose -V  -mstm8 $(INCLUDE_DIRS) --out-fmt-elf $(OBJS)
 	stm8-size  $(TARGET).elf
+#	$(CC)  --verbose -V  -mstm8 $(INCLUDE_DIRS)  $(OBJS) 
+# $(MAIN_C)
 	@echo ' --------------------------------------- '
 	@echo '  '
-  
-%.rel: %.c
-	@echo 'Building file: $<'
-	@echo 'Invoking: SDCC Compiler'
-	$(CC) -c -mstm8  $(CFLAGS)  -o "$@" $(INCLUDE_DIRS) $< 
-	@echo done compiling "$<"
-	@echo '  '
 
 
-flash: $(TARGET).ihx
-	stm8flash -c stlinkv2 -p stm8s103?3  -w $(TARGET).ihx
-	
 clean: 
 	@echo ' --------------------------------------- '
 	@echo 'removing all $(OBJS)' 
@@ -64,4 +60,20 @@ clean:
 	rm -rf $(OBJS:.rel=.asm)
 	rm -rf $(OBJS:.rel=.adb)
 
+  
+%.rel: %.c
+	@echo 'Building file: $<'
+	@echo 'Invoking: SDCC Compiler'
+	$(CC) -c -mstm8  $(CFLAGS) --verbose -V -o "$@" $(INCLUDE_DIRS) $< 
+	@echo done compiling "$<"
+	@echo '  '
+
+
+flash: $(TARGET).ihx
+
+	#stm8flash -c stlinkv2 -p stm8s103?3  -w $(TARGET).ihx
+	#/cygdrive/c/Program\ Files\ \(x86\)/STMicroelectronics/st_toolset/stvp/STVP_CmdLine.exe --help
+	'C:\Program Files (x86)\STMicroelectronics\st_toolset\stvp\STVP_CmdLine.exe' -BoardName=ST-LINK  -Device=STM8S103F3 -no_loop -FileProg=$<
+	
+	
 	

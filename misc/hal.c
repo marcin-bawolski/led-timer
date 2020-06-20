@@ -21,26 +21,52 @@ volatile uint16_t Timeout;
 volatile uint16_t *pTimer=NULL;
 volatile uint16_t decrementStep=0;
 
+extern volatile uint8_t blink;
+static volatile uint8_t half_sec_counter=0;
+
 void TIMER1_isr(void) __interrupt(IRQ_TIM1)
 {
-	static uint16_t second=0;
+    int32_t tmp_counter;
+
+	static uint16_t miliseconds=0;
 
 	if (Timeout > 0){
 		Timeout--;
 	}
-	second++;
-
-	if (second == 1000){
-		second =0;
-
-	if ( pTimer != NULL){
-		if ((*pTimer) >0){
-			(*pTimer) = (*pTimer) - decrementStep;
-			}
+	miliseconds++;
+  
+	if (miliseconds & 0x01)
+	{
+		half_sec_counter++;
+		if (half_sec_counter > 250)
+		{
+			half_sec_counter=0;
+			blink++;
 		}
 	}
+  
 
+	if (miliseconds > decrementStep)
+	{
+		miliseconds =0;
+		if ( pTimer != NULL)
+		{
+		    tmp_counter = *pTimer;
+		    /*
+			if ((*pTimer) >0)
+			{
+				(*pTimer) = (*pTimer) - decrementStep;
+			}*/
+		    if (tmp_counter >0)
+		    {
+		        tmp_counter -= decrementStep;
+		    }else {
+		        tmp_counter =0;
+		    }
+		    *pTimer= tmp_counter ;
 
+		}
+	}
 
 	TIM1->SR1 &= ~(1<<0);
 }
@@ -59,7 +85,7 @@ uint8_t  InitClock(void)
   return 0;
 }
 
-void SetupTimer1(uint16_t period ){
+void SetupTimer1(uint16_t period){
 
   // Assuming FMaster = 2 MHz and prescaler = 2, have 1us clock in timer
   // Timer Auto-reload preload enable, DownCounting, Timer Enabled
@@ -68,6 +94,8 @@ void SetupTimer1(uint16_t period ){
   TIM1->ARRH =  (uint8_t)(period>>8);
   TIM1->ARRL =  (uint8_t)(period & 0x00FF);
 
+  //TIM1->PSCRH = 0x03;
+  //TIM1->PSCRL = 0xe8; // prescaler = 1000
 
   TIM1->PSCRH = 0x00;
   TIM1->PSCRL = 0x01;
@@ -82,19 +110,6 @@ void attach_to_timer1(uint16_t *pCounter, uint16_t decrement)
 		decrementStep = decrement;
 	}
 	  enableInterrupts();
-}
-
-
-
-void setup_timer4(uint8_t period )
-{
-  // Assuming FMaster = 2 MHz and prescaler = 64, have 1us clock in timer
-  // Timer Auto-reload preload enable, UpCounting, Timer Enabled
-  TIM4->CR1 = (1u<<7) | (1u<<0);
-  TIM4->ARR =  period;
-  TIM4->PSCR = 0x06;
-
-  TIM4->IER = 1u<<0;     /*!< interrupt enable register*/
 }
 
 

@@ -18,7 +18,7 @@
 #define ENCODER_CLK_PIN   (1u<<2)
 #define ENCODER_DATA_PIN  (1u<<1)
 
-uint8_t init_encoder(uint16_t *pCounter);
+uint8_t init_encoder(uint16_t *pCounter, uint16_t increment_step);
 
 void ENCODER_isr(void) __interrupt(IRQ_EXTI_PORT_A);
 void BUTTON_isr(void) __interrupt(IRQ_EXTI_PORT_D);
