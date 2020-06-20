@@ -3,11 +3,7 @@
 ===============================================================================
  Name        : main.c
  Author      : $Author: marcin $
- Version     : $Revision: 44 $
- Url         : $URL: https://repo1.mydevil.net/svn/priv/bawolski/stm8/trunk/tig_controller/main.c $
- Copyright   : $(copyright)
- Description : main definition
-===============================================================================
+ ===============================================================================
 */
 
 // Marcin: interrupt function must be at least declared  in the same file as main() function
@@ -32,16 +28,15 @@ extern uint8_t button=0;
 void set_number(uint8_t led[3], uint16_t value);
 void set_blank_number(uint8_t led[3]);
 
-uint16_t terminate=0;
+uint16_t on_time=0;
+uint16_t blank_time=550;
 
 uint16_t led_counter=0;
-uint16_t delay_counter=0;
-
 uint8_t counter=0;
 uint8_t update=0;
 uint8_t lcd_state=0;
 volatile uint8_t blink=0;
-
+const uint8_t time_resolution = 10;
 
 void main(void)
 {
@@ -54,13 +49,16 @@ void main(void)
   SetupTimer1(1000);
 
 
+  GPIOD->DDR |= (uint8_t)((1u<<5));
+  GPIOD->CR1 |= (uint8_t)((1u<<5));
+  GPIOD->ODR &= (uint8_t)(~(1u<<5));
+
   GPIOA->DDR |= (uint8_t)((1u<<3));
   GPIOA->CR1 |= (uint8_t)((1u<<3));
+  GPIOA->ODR |= (uint8_t)((1u<<3));
 
-  GPIOA->ODR &= (uint8_t)(~(1u<<3));
-
-  init_encoder(&irq_count, 10);
-  terminate = 1;
+  init_encoder(&irq_count, time_resolution);
+  on_time = 1;
 
   set_number(pLed_cnt, 0);
   enableInterrupts();
@@ -69,64 +67,62 @@ void main(void)
 	{
 
 		led_counter = irq_count;
-		init_encoder(&irq_count, 50);
+		init_encoder(&irq_count, time_resolution);
 
 		set_number(pLed_cnt, led_counter);
+		GPIOA->ODR |= (uint8_t)((1u<<3));
 		do 
 		{
-		    GPIOA->ODR &= (uint8_t)(~(1u<<3));
 			do {
 				wfi();	
 				if(button)
 				{
-
 					break;
 				}			
 			}while (!update);
 			
-			disableInterrupts();
+			//disableInterrupts();
 			update = 0;
 			led_counter = irq_count;
-			delay_counter = led_counter;
-			enableInterrupts();
+		//	enableInterrupts();
 			set_number(pLed_cnt, led_counter);
-			if(button)
-			{	
-				break;
-			} 
-		} while (1);
 
-		init_encoder(NULL, 10);
+		} while (!button);
 
+		init_encoder(NULL, 1);
 
-		GPIOA->ODR |= (uint8_t)((1u<<3));
-
+		//GPIOA->ODR |= (uint8_t)((1u<<3));
 		if (button == 1) 
 		{
-			disableInterrupts();
+		//	disableInterrupts();
 			button = 0;
-			enableInterrupts();
-			terminate = led_counter;
-			attach_to_timer1(&terminate, 10);
-
+		//	enableInterrupts();
+			on_time = led_counter;
+			attach_to_timer1(&on_time, time_resolution);
+		    GPIOA->ODR &= (uint8_t)(~(1u<<3));
 			do
 			{
-				set_number(pLed_cnt, terminate);
+				set_number(pLed_cnt, on_time);
 				wfi();
 				button=0;
 				// wait untill counter decremented to 0 and terminate flag set
-			}while (terminate > 0) ;
-			
+			}while (on_time > 0);
+			GPIOA->ODR |= (uint8_t)((1u<<3));
 
-			set_number(pLed_cnt, terminate);
+
+			set_number(pLed_cnt, on_time);
 			button=0;
-
-			GPIOA->ODR &= (uint8_t)(~(1u<<3));
-
-			disableInterrupts();
+		//	disableInterrupts();
 			button = 0;
-			enableInterrupts();
+	//		enableInterrupts();
 		}
+		set_blank_number(pLed_cnt);
+		blank_time = 750 ;
+	    attach_to_timer1(&blank_time, 50);
+        do{
+            wfi();
+        }while (blank_time >0);
+        button=0;
 	}
 }
 

@@ -8,5 +8,6 @@
 *.rel
 *.ls
 *.rst
+*.adb
 .settings/
 

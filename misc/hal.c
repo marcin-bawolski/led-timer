@@ -26,10 +26,10 @@ static volatile uint8_t half_sec_counter=0;
 
 void TIMER1_isr(void) __interrupt(IRQ_TIM1)
 {
-    int32_t tmp_counter;
+   // int32_t tmp_counter;
 
 	static uint16_t miliseconds=0;
-
+    GPIOD->ODR ^= (uint8_t)((1u<<5));
 	if (Timeout > 0){
 		Timeout--;
 	}
@@ -37,6 +37,8 @@ void TIMER1_isr(void) __interrupt(IRQ_TIM1)
   
 	if (miliseconds & 0x01)
 	{
+
+
 		half_sec_counter++;
 		if (half_sec_counter > 250)
 		{
@@ -51,19 +53,21 @@ void TIMER1_isr(void) __interrupt(IRQ_TIM1)
 		miliseconds =0;
 		if ( pTimer != NULL)
 		{
-		    tmp_counter = *pTimer;
 		    /*
-			if ((*pTimer) >0)
-			{
-				(*pTimer) = (*pTimer) - decrementStep;
-			}*/
-		    if (tmp_counter >0)
+		    tmp_counter = *pTimer;
+			if (tmp_counter >0)
 		    {
 		        tmp_counter -= decrementStep;
 		    }else {
 		        tmp_counter =0;
 		    }
-		    *pTimer= tmp_counter ;
+		    *pTimer= tmp_counter;
+*/
+
+		    if (*pTimer >0)
+            {
+		        *pTimer -= decrementStep;
+            }
 
 		}
 	}
@@ -104,7 +108,8 @@ void SetupTimer1(uint16_t period){
 }
 
 void attach_to_timer1(uint16_t *pCounter, uint16_t decrement)
-{  disableInterrupts();
+{
+    disableInterrupts();
 	if (pCounter != NULL){
 		pTimer = pCounter;
 		decrementStep = decrement;
@@ -116,9 +121,9 @@ void attach_to_timer1(uint16_t *pCounter, uint16_t decrement)
 
 inline void clear_timeout(void)
 {
-   disableInterrupts();
+  // disableInterrupts();
    Timeout=0;
-   enableInterrupts();
+//   enableInterrupts();
 }
 
 
